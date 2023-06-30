@@ -26,5 +26,5 @@ RUN python3 -m pip install $(pwd) && \
 HEALTHCHECK --interval=1m --timeout=30s --start-period=15s --retries=3 \
      CMD curl -v --silent http://localhost:5400/clients 2>&1 | grep '< HTTP/1.1 200 OK'
 
-ENTRYPOINT ["python", "-m", "gunicorn", "oc_client_provider.wsgi:app", "-b", "0.0.0.0:5400"]
+ENTRYPOINT ["python3", "-m", "gunicorn", "oc_client_provider.wsgi:app", "-b", "0.0.0.0:5400"]
 
