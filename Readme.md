@@ -4,14 +4,15 @@
 
 #### Required
 
-    - *PSQL\_URL*
-    - *PSQL\_USER*
-    - *PSQL\_PASSWORD*
+- *PSQL\_URL*
+- *PSQL\_USER*
+- *PSQL\_PASSWORD*
 
 #### Optional
-    - *DJANGO\_TIMEZONE* default: **Etc/UTC**
-    - *COUNTERPARTY\_ENABLED* default: **False**
-    - *COUNTERPARTY\_PATH* default: `client_counterparties.yml` in current working directory
+
+- *DJANGO\_TIMEZONE* default: **Etc/UTC**
+- *COUNTERPARTY\_ENABLED* default: **False**
+- *COUNTERPARTY\_PATH* default: `client_counterparties.yml` in current working directory
 
 ## Client counterparty functionality
 
