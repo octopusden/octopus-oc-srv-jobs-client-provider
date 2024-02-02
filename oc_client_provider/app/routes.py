@@ -61,6 +61,7 @@ def get_client_list():
     """
     Endpoint returning list of active clients
     """
+    logging.info("GET /clients from [%s]" % request.remote_addr)
     try:
         client_list = client_getter.get_clients()
     except Exception as _e:
@@ -77,6 +78,7 @@ def get_client_lang_list():
     """
     Endpoint returning map of client: lang by given list of clients
     """
+    logging.info("POST /client_lang from [%s]" % request.remote_addr)
     try:
         client_list = request.json
         client_lang_dict = client_getter.get_client_lang_list(client_list)
@@ -94,6 +96,7 @@ def get_client_deliveries():
     """
     Endpoint returning list of client's deliveries
     """
+    logging.info("POST /deliveries from [%s]" % request.remote_addr)
     timezone = request.json.get('timezone') or 'Etc/UTC'
     need_csv = request.json.get('csv', True)
 
@@ -105,9 +108,9 @@ def get_client_deliveries():
 
     if not client:
         return response_json(400, {"result": "Client code must be specified"})
-    
+
     search_params = request.json.get('search_params') or dict()
-    
+
     delivery_list, error = client_getter.get_deliveries(client, search_params, timezone)
 
     if not delivery_list and not error:
@@ -118,7 +121,7 @@ def get_client_deliveries():
 
     if need_csv:
         return response_csv(201, delivery_list)
-    
+
     return response_json(201, delivery_list)
 
 
@@ -127,12 +130,13 @@ def get_client_deliveries_v2():
     """
     Endpoint returning list of client's deliveries
     """
+    logging.info("POST /v2/deliveries from [%s]" % request.remote_addr)
     timezone = request.json.get('timezone') or 'Etc/UTC'
     client = request.json.get("client")
 
     if not client:
         return response_json(400, '{"result": "Client code must be specified"}')
-    
+
     search_params = request.json.get('search_params') or dict()
     delivery_list, error = client_getter.get_deliveries_v2(client, search_params, timezone)
 
@@ -150,6 +154,7 @@ def get_client_data (client_id):
     """
     Endpoint returning client data by id
     """
+    logging.info("GET /get_client_data/%i from [%s]" % (client_id, request.remote_addr))
     try:
         client_data = client_getter.get_client_data(client_id)
     except Exception as _e:
@@ -166,4 +171,5 @@ def get_counterparty (client_code):
     """
     Endpoint returning client counterparty
     """
+    logging.info("GET /client_counterparty/%s from [%s]" % (client_code, request.remote_addr))
     return response_json(200, {client_code: ClientCounterparty().client_counterparty(client_code)})

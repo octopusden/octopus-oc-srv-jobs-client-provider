@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-__version = "1.0.1"
+__version = "1.0.2"
 
 setup(name="oc-client-provider",
         version=__version,
