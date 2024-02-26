@@ -70,6 +70,15 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
         self.assertEqual(_actual_list, _expected_list)
         self.assertEqual(len(_actual_list), 51)
 
+    def test_get_clients__rundeck(self):
+        response = self.test_client.get("/rundeck/clients")
+        self.assertEqual(response.status_code, 200)
+        _actual_list = sorted(response.json)
+        _expected_list = sorted(list(map(lambda x: x.code, dl_models.Client.objects.filter(is_active=True))))
+        _expected_list.sort()
+        self.assertEqual(_actual_list, _expected_list)
+        self.assertEqual(len(_actual_list), 51)
+
     def test_get_lang(self):
         def __get_lang(client_code):
             _c = dl_models.Client.objects.get(code=client_code)

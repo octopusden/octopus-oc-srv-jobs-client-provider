@@ -21,8 +21,13 @@ def response_json(code, data):
     if not isinstance(data, str):
         data = json.dumps(data)
 
+    # content_type implements a response header 'Content-type: xxxx'
+    # mimetype is internal flask parameter not visible to requestor
+    # we need a header to be set exactly in many cases, especially for Rundeck
+    # see https://flask.palletsprojects.com/en/3.0.x/quickstart/#about-responses
     return Response(
         status=code,
+        content_type='application/json',
         mimetype='application/json',
         response=data)
 
@@ -55,21 +60,30 @@ def response_csv(code, data):
         mimetype='text/csv',
         response=si.getvalue())
 
-
+@client_provider_bp.route('/rundeck/clients', methods=['GET'])
 @client_provider_bp.route('/clients', methods=['GET'])
 def get_client_list():
     """
     Endpoint returning list of active clients
+    The difference between '/rundeck/clients' and general '/clients' endpoints:
+    1. Clients are sorted alphabetically
+    2. No '404' error for empty list
     """
-    logging.info("GET /clients from [%s]" % request.remote_addr)
+    logging.info("GET [%s] from [%s]" % (request.url_rule.rule, request.remote_addr))
     try:
         client_list = client_getter.get_clients()
     except Exception as _e:
         logging.exception(_e)
-        return response_json(500, {"result": str(e)})
+        return response_json(500, {"result": str(_e)})
 
     if not client_list:
-        return response_json(404, {"result": "Client not found"})
+        if 'rundeck' not in request.url_rule.rule:
+            return response_json(404, {"result": "Client not found"})
+        
+        client_list = list()
+
+    if 'rundeck' in request.url_rule.rule:
+        client_list.sort()
 
     return response_json(200, client_list)
 
