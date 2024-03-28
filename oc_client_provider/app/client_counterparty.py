@@ -21,7 +21,7 @@ class ClientCounterparty(object):
         :param client_code: client code
         :return: client counterparty
         """
-        if not hasattr(self, "__counterparty_path") or not self.__counterparty_path:
+        if not hasattr(self, "_ClientCounterparty__counterparty_path") or not self.__counterparty_path:
             logging.debug("Counterparty is disabled, returning empty string")
             return ''
 
