@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-__version = "1.1.0"
+__version = "1.1.1"
 
 setup(name="oc-client-provider",
         version=__version,
@@ -17,5 +17,7 @@ setup(name="oc-client-provider",
             "gunicorn",
             "pytz",
             "pyyaml"],
-      packages={"oc_client_provider"},
+      packages=[
+            "oc_client_provider",
+            "oc_client_provider.app"],
       python_requires=">=3.6")
