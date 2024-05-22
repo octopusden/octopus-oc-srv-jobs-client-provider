@@ -61,6 +61,34 @@ def response_csv(code, data):
         mimetype='text/csv',
         response=si.getvalue())
 
+
+def _adjust_arguments(args):
+    """
+    Convert and filter arguments
+    Do not raise any exception, just remove invalid
+    :param dict args: what to filter
+    """
+    if not args:
+        return args
+
+    for __k in list(args.keys()):
+        # non-string arguments is not allowed for this exact service
+        __v = args.get(__k)
+
+        if not isinstance(__v, str):
+            continue
+
+        __v = __v.strip().replace("\t", " ").replace(" ", "_")
+
+        if not __v:
+            del(args[__k])
+            continue
+
+        args[__k] = __v
+
+    return args
+
+
 @client_provider_bp.route('/rundeck/clients', methods=['GET'])
 @client_provider_bp.route('/clients', methods=['GET'])
 def get_client_list():
@@ -197,16 +225,19 @@ def sync_customer_tf():
     # doing our business depending on request type
     # returning normal JSON response
     logging.info("/sync_customer_tf from [%s]" % request.remote_addr)
-    logging.debug(f"Args: [{request.args}]")
+    _rq_args = _adjust_arguments(request.args.to_dict())
+    logging.debug(f"Args: [{_rq_args}]")
 
     _client_tf = ClientTF()
     # fork upon method used
     if request.method in ['PUT', 'DELETE']:
-        logging.debug(f"JSON: [{request.json}]")
+        _rq_json = _adjust_arguments(request.json)
+        logging.debug(f"JSON: [{_rq_json}]")
+        
         try:
-            getattr(_client_tf, f"{request.method.lower()}_client")(**request.json)
+            getattr(_client_tf, f"{request.method.lower()}_client")(**_rq_json)
         except Exception as _e:
             logging.exception(_e)
             return response_json(400, {"result": f"{repr(_e)}"})
 
-    return response_json(201 if request.method == 'PUT' else 200, _client_tf.get_client(**request.args))
+    return response_json(201 if request.method == 'PUT' else 200, _client_tf.get_client(**_rq_args))
