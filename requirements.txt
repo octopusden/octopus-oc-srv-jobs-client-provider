@@ -1,0 +1,8 @@
+oc-delivery-apps >= 11.2.9
+oc-orm-initializator >= 1.1.0
+flask
+gunicorn
+pytz
+pyyaml
+pytest
+coverage
