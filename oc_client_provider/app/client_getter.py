@@ -21,7 +21,7 @@ class ClientGetter:
         try:
             # get filtered records from DB, exclude those who does not have client code filled
             from oc_delivery_apps.dlmanager.models import Client
-            records = Client.objects.filter(is_active=True)
+            records = Client.objects.filter(is_active=True).exclude(code__startswith='_')
             records = list(map(lambda x: x.code, records))
             records = list(filter(lambda x: bool(x), records))
         except Client.DoesNotExist as err:
