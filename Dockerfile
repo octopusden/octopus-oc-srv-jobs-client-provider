@@ -1,30 +1,42 @@
-FROM debian:bullseye
+FROM python:3.12-slim AS builder
 
-USER root
-
-# "psycopg2" will not be installed correctly without 'libpq-dev' and 'build-essential'
-
-RUN apt-get --quiet --assume-yes update && \
-    apt-get --no-install-recommends --quiet --assume-yes install \
-        python3-pysvn \
-        python3-pip \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3-svn \
         python3-dev \
         libpq-dev \
         build-essential \
         libmagic1 \
-        curl && \
-    python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade setuptools wheel
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN rm -rf /build
-COPY --chown=root:root . /build
 WORKDIR /build
-RUN python3 -m pip install $(pwd) && \
-    python3 -m unittest discover -v && \
-    python3 setup.py bdist_wheel
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# TODO: implement coverage report and need to cover > 90% testccse
+RUN coverage run -m pytest
+
+FROM python:3.12-slim
+
+WORKDIR /local
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libpq5 \
+        libmagic1 \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+COPY . .
 
 HEALTHCHECK --interval=1m --timeout=30s --start-period=15s --retries=3 \
-     CMD curl -v --silent http://localhost:5400/clients 2>&1 | grep '< HTTP/1.1 200 OK'
+    CMD curl -f http://localhost:5400/clients || exit 1
 
-ENTRYPOINT ["python3", "-m", "gunicorn", "oc_client_provider.wsgi:app", "-b", "0.0.0.0:5400"]
-
+ENTRYPOINT ["gunicorn", "oc_client_provider.wsgi:app", "-b", "0.0.0.0:5400"]
